@@ -34,7 +34,7 @@ imis_modules = openimis_apps()
 def bind_service_signals():
     if 'insuree' in imis_modules:
         def on_insuree_create_or_update(**kwargs):
-            model = kwargs.copy()
+            model = kwargs.get('insuree', None)
             if model:
                 fhir_content = _resource_to_fhirr(model)
                 url= 'https://ptsv3.com/t/giuy/'
