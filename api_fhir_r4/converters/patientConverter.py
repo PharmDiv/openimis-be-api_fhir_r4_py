@@ -26,7 +26,7 @@ from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 
     @classmethod
-    def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+    def to_fhir_obj1(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_patient = Patient.construct()
         cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
         cls.build_human_names(fhir_patient, imis_insuree)
@@ -45,6 +45,26 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, headers=headers, data=fhir_json)
         return fhir_patient
+
+
+        @classmethod
+    def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        fhir_patient = Patient.construct()
+        cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
+        cls.build_human_names(fhir_patient, imis_insuree)
+        cls.build_fhir_identifiers(fhir_patient, imis_insuree)
+        cls.build_fhir_birth_date(fhir_patient, imis_insuree)
+        cls.build_fhir_gender(fhir_patient, imis_insuree)
+        cls.build_fhir_marital_status(fhir_patient, imis_insuree)
+        cls.build_fhir_telecom(fhir_patient, imis_insuree)
+        cls.build_fhir_addresses(fhir_patient, imis_insuree, reference_type)
+        cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
+        cls.build_fhir_contact(fhir_patient, imis_insuree)
+        cls.build_fhir_photo(fhir_patient, imis_insuree)
+        cls.build_fhir_general_practitioner(fhir_patient, imis_insuree, reference_type)
+        return fhir_patient
+
+    
 
     @classmethod
     def to_imis_obj(cls, fhir_patient, audit_user_id):
