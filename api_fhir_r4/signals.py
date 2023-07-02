@@ -1,19 +1,30 @@
+from typing import Union, List, Tuple, Iterable
+
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
+
+import core.datetimes.ad_datetime
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.models import Subscription, SubscriptionNotificationResult
+from api_fhir_r4.subscriptions.notificationClient import RestSubscriptionNotificationClient, \
+    SubscriberNotificationOutput
+from core.models import HistoryModel, VersionedModel
+
 import logging
 import requests
 import json
 from django.core.exceptions import ObjectDoesNotExist
-import core.datetimes.ad_datetime
+
 from api_fhir_r4.converters import PatientConverter, BillInvoiceConverter, InvoiceConverter, \
     HealthFacilityOrganisationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
-from api_fhir_r4.converters import BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
 from api_fhir_r4.subscriptions.subscriptionCriteriaFilter import SubscriptionCriteriaFilter
 from core.service_signals import ServiceSignalBindType
 from core.signals import bind_service_signal
-from core.models import HistoryModel, VersionedModel
-from openIMIS.openimisapps import openimis_apps
 from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+
+from openIMIS.openimisapps import openimis_apps
 
 
 logger = logging.getLogger('openIMIS')
@@ -25,11 +36,16 @@ def bind_service_signals():
         def on_insuree_create_or_update(**kwargs):
             model = kwargs.get('result', None)
             if model:
-                if model:
                 fhir_content = _resource_to_fhirr(model)
                 url= 'https://ptsv3.com/t/giuy/'
                 headers = {'Content-Type': 'application/json'}
                 response = requests.post(url, headers=headers, data=fhir_content)
+                
+        bind_service_signal(
+            'insuree_service.create_or_update',
+            on_insuree_create_or_update,
+            bind_type=ServiceSignalBindType.AFTER
+        )
                 
         bind_service_signal(
             'insuree_service.create_or_update',
