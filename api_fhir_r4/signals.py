@@ -34,13 +34,9 @@ imis_modules = openimis_apps()
 def bind_service_signals():
     if 'insuree' in imis_modules:
         def on_insuree_create_or_update(**kwargs):
-            #model = kwargs.get('result', None)
-            model = kwargs.values()
+            model = kwargs.get('result', None)
             if model:
-                #fhir_content = _resource_to_fhirr(model)
-                url= 'https://ptsv3.com/t/giuy/'
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(url, headers=headers, data=model)
+                _resource_to_fhirr(model)
                 
         bind_service_signal(
             'insuree_service.create_or_update',
