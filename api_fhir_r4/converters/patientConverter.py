@@ -47,7 +47,7 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         return fhir_patient
 
 
-        @classmethod
+    @classmethod
     def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_patient = Patient.construct()
         cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
