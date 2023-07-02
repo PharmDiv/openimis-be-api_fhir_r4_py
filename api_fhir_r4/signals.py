@@ -51,7 +51,7 @@ def bind_service_signals():
         )
 
     def _resource_to_fhirr(imis_resource: Union[HistoryModel, VersionedModel]) -> dict:
-        return PatientConverter().to_fhir_obj(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
+        return PatientConverter().to_fhir_obj1(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
 
     
     if 'location' in imis_modules:
