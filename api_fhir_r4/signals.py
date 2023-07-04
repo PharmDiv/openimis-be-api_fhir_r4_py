@@ -21,25 +21,40 @@ def bind_service_signals():
         def on_insuree_create_or_update(**kwargs):
             model = kwargs.get('result', None)
             if model:
-                notify_subscribers(model, PatientConverter(), 'Patient', None)
-
+                _resource_to_fhirr(model)
+                
         bind_service_signal(
             'insuree_service.create_or_update',
             on_insuree_create_or_update,
             bind_type=ServiceSignalBindType.AFTER
         )
 
-    if 'location' in imis_modules:
-        def on_hf_create_or_update(**kwargs):
+    def _resource_to_fhirr(imis_resource: Union[HistoryModel, VersionedModel]) -> dict:
+        return PatientConverter().to_fhir_obj1(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
+
+
+
+def bind_service_signals():
+    if 'insuree' in imis_modules:
+        def on_family_create_or_update(**kwargs):
             model = kwargs.get('result', None)
             if model:
-                notify_subscribers(model, HealthFacilityOrganisationConverter(), 'Organisation', 'bus')
-
+                _resource_to_fhirr_f(model)
+                
         bind_service_signal(
-            'health_facility_service.update_or_create',
-            on_hf_create_or_update,
+            'family_service.create_or_update',
+            on_family_create_or_update,
             bind_type=ServiceSignalBindType.AFTER
         )
+                
+    def _resource_to_fhirr_f(imis_family: Union[HistoryModel, VersionedModel]) -> dict:
+        return GroupConverter().to_fhir_obj1(imis_family, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
+
+
+
+
+
+    
     if 'invoice' in imis_modules:
         from invoice.models import Bill, Invoice
 
