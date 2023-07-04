@@ -18,6 +18,30 @@ from api_fhir_r4.exceptions import FHIRException
 class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
 
     @classmethod
+    def to_fhir_obj1(cls, imis_family, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        fhir_family = {}
+        # create two obligatory field
+        cls.build_fhir_actual(fhir_family, imis_family)
+        cls.build_fhir_type(fhir_family, imis_family)
+        fhir_family = Group(**fhir_family)
+        # then create fhir object as usual
+        cls.build_fhir_extentions(fhir_family, imis_family, reference_type)
+        cls.build_fhir_identifiers(fhir_family, imis_family)
+        cls.build_fhir_pk(fhir_family, imis_family, reference_type=reference_type)
+        cls.build_fhir_active(fhir_family, imis_family)
+        cls.build_fhir_quantity(fhir_family, imis_family)
+        cls.build_fhir_name(fhir_family, imis_family)
+        cls.build_fhir_member(fhir_family, imis_family, reference_type)
+        fhir_json = fhir_family.json()
+        fhir_json_parsed = json.loads(fhir_json)
+        id = fhir_json_parsed["id"]
+        url= "https://04895d76-4524-4327-99d6-15ddf622c87f:e7dd814a7494bce284a7a45f6777bec3b31a8c0c3fa8eea9a598dff65f651173@61c2-102-88-35-66.ngrok-free.app/fhir/R4/Group/{}".format(id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=fhir_json)
+        return fhir_family
+
+
+    @classmethod
     def to_fhir_obj(cls, imis_family, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_family = {}
         # create two obligatory field
