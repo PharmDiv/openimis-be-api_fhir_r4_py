@@ -1,5 +1,18 @@
-import logging
+from typing import Union, List, Tuple, Iterable
 
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
+
+import core.datetimes.ad_datetime
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
+from api_fhir_r4.models import Subscription, SubscriptionNotificationResult
+from api_fhir_r4.subscriptions.notificationClient import RestSubscriptionNotificationClient, \
+    SubscriberNotificationOutput
+from core.models import HistoryModel, VersionedModel
+
+import logging
+import requests
+import json
 from django.core.exceptions import ObjectDoesNotExist
 
 from api_fhir_r4.converters import PatientConverter, BillInvoiceConverter, InvoiceConverter, \
@@ -9,8 +22,10 @@ from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotifi
 from api_fhir_r4.subscriptions.subscriptionCriteriaFilter import SubscriptionCriteriaFilter
 from core.service_signals import ServiceSignalBindType
 from core.signals import bind_service_signal
+from api_fhir_r4.converters import BaseFHIRConverter, ReferenceConverterMixin
 
 from openIMIS.openimisapps import openimis_apps
+
 
 logger = logging.getLogger('openIMIS')
 imis_modules = openimis_apps()
@@ -32,28 +47,18 @@ def bind_service_signals():
     def _resource_to_fhirr(imis_resource: Union[HistoryModel, VersionedModel]) -> dict:
         return PatientConverter().to_fhir_obj1(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
 
-
-
-def bind_service_signals():
-    if 'insuree' in imis_modules:
-        def on_family_create_or_update(**kwargs):
+    
+    if 'location' in imis_modules:
+        def on_hf_create_or_update(*args, **kwargs):
             model = kwargs.get('result', None)
             if model:
-                _resource_to_fhirr_f(model)
-                
+                notify_subscribers(model, HealthFacilityOrganisationConverter(), 'Organisation', 'bus')
+
         bind_service_signal(
-            'family_service.create_or_update',
-            on_family_create_or_update,
+            'health_facility_service.update_or_create',
+            on_hf_create_or_update,
             bind_type=ServiceSignalBindType.AFTER
         )
-                
-    def _resource_to_fhirr_f(imis_family: Union[HistoryModel, VersionedModel]) -> dict:
-        return GroupConverter().to_fhir_obj1(imis_family, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
-
-
-
-
-
     
     if 'invoice' in imis_modules:
         from invoice.models import Bill, Invoice
