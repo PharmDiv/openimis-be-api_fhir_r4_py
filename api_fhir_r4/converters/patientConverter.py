@@ -1,4 +1,5 @@
 import json
+import requests
 import urllib
 from urllib.parse import urlparse
 
@@ -25,6 +26,30 @@ from api_fhir_r4.utils import TimeUtils, DbManagerUtils
 class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConverterMixin):
 
     @classmethod
+    def to_fhir_obj1(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
+        fhir_patient = Patient.construct()
+        cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
+        cls.build_human_names(fhir_patient, imis_insuree)
+        cls.build_fhir_identifiers(fhir_patient, imis_insuree)
+        cls.build_fhir_birth_date(fhir_patient, imis_insuree)
+        cls.build_fhir_gender(fhir_patient, imis_insuree)
+        cls.build_fhir_marital_status(fhir_patient, imis_insuree)
+        cls.build_fhir_telecom(fhir_patient, imis_insuree)
+        cls.build_fhir_addresses(fhir_patient, imis_insuree, reference_type)
+        cls.build_fhir_extentions(fhir_patient, imis_insuree, reference_type)
+        cls.build_fhir_contact(fhir_patient, imis_insuree)
+        cls.build_fhir_photo(fhir_patient, imis_insuree)
+        cls.build_fhir_general_practitioner(fhir_patient, imis_insuree, reference_type)
+        fhir_json = fhir_patient.json()
+        fhir_json_parsed = json.loads(fhir_json)
+        id = fhir_json_parsed["id"]
+        url= "https://04895d76-4524-4327-99d6-15ddf622c87f:e7dd814a7494bce284a7a45f6777bec3b31a8c0c3fa8eea9a598dff65f651173@61c2-102-88-35-66.ngrok-free.app/fhir/R4/Patient/{}".format(id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=fhir_json)
+        return fhir_patient
+
+
+    @classmethod
     def to_fhir_obj(cls, imis_insuree, reference_type=ReferenceConverterMixin.UUID_REFERENCE_TYPE):
         fhir_patient = Patient.construct()
         cls.build_fhir_pk(fhir_patient, imis_insuree, reference_type)
@@ -40,6 +65,8 @@ class PatientConverter(BaseFHIRConverter, PersonConverterMixin, ReferenceConvert
         cls.build_fhir_photo(fhir_patient, imis_insuree)
         cls.build_fhir_general_practitioner(fhir_patient, imis_insuree, reference_type)
         return fhir_patient
+
+    
 
     @classmethod
     def to_imis_obj(cls, fhir_patient, audit_user_id):
