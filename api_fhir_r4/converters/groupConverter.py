@@ -39,7 +39,7 @@ class GroupConverter(BaseFHIRConverter, ReferenceConverterMixin):
         url = "http://ptsv3.com/t/test/"
         headers = {'Content-Type': 'application/json'}
         #response = requests.put(url, headers=headers, data=fhir_json)
-        response = requests.put(url, headers=headers, data=fhir_json)
+        response = requests.post(url, headers=headers, data=fhir_json)
         return fhir_family
 
 
