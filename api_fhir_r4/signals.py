@@ -15,7 +15,7 @@ import requests
 import json
 from django.core.exceptions import ObjectDoesNotExist
 
-from api_fhir_r4.converters import PatientConverter, BillInvoiceConverter, InvoiceConverter, \
+from api_fhir_r4.converters import PatientConverter, GroupConverter, BillInvoiceConverter, InvoiceConverter, \
     HealthFacilityOrganisationConverter
 from api_fhir_r4.mapping.invoiceMapping import InvoiceTypeMapping, BillTypeMapping
 from api_fhir_r4.subscriptions.notificationManager import RestSubscriptionNotificationManager
@@ -46,6 +46,26 @@ def bind_service_signals():
 
     def _resource_to_fhirr(imis_resource: Union[HistoryModel, VersionedModel]) -> dict:
         return PatientConverter().to_fhir_obj1(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
+
+
+
+def bind_service_signals():
+    if 'insuree' in imis_modules:
+        def on_family_create_or_update(**kwargs):
+            model = kwargs.get('result', None)
+            if model:
+                _resource_to_fhirr_f(model)
+                
+        bind_service_signal(
+            'family_service.create_or_update',
+            on_family_create_or_update,
+            bind_type=ServiceSignalBindType.AFTER
+        )
+
+    def _resource_to_fhirr_f(imis_resource: Union[HistoryModel, VersionedModel]) -> dict:
+        return GroupConverter().to_fhir_obj1(imis_resource, ReferenceConverterMixin.UUID_REFERENCE_TYPE).dict()
+    
+    
 
     
     if 'location' in imis_modules:
